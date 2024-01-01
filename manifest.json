@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "spooky things",
+  "version": "1.0",
+  "description": "spooky tihngs tries to block & log all the malicious request made by your browser!",
+  "action": {
+    "browser_icon": "icon.png",
+    "default_popup": "index.html",
+    "default_title": "<change me!!>"
+  },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "commands",
+    "activeTab",
+    "nativeMessaging"
+  ],
+  "icons": {},
+  "commands": {
+    "yourCommandName": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+U",
+        "mac": "Command+Shift+U"
+      },
+      "description": "Description of your command"
+    }
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "scripts/content.js"
+      ],
+      "matches": [
+        "https://*/*"
+      ],
+      "css": [
+        "css/style.css"
+      ],
+      "world": "ISOLATED"
+    }
+  ]
+}

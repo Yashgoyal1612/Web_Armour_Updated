@@ -1,0 +1,134 @@
+/* Reset some default styles */
+body,
+h1,
+h2,
+p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Set a background color and font */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+}
+
+/* Style the header */
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    width: 200px;
+    /* Set a fixed width to make it square */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 20px;
+}
+
+/* Main content container */
+.container {
+    width: 200px;
+    /* Set a fixed width to make it square */
+    height: auto;
+    /* Adjusted to auto for dynamic content */
+    margin: 20px auto;
+    /* Add margin to create space between header and container */
+    padding: 0 20px;
+    /* Reduce padding for a more compact look */
+    /* background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+}
+
+#api-key-text {
+    font-size: 13px;
+}
+
+#api-key {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    margin-top: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Style the switches */
+/* .switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.switch input[type="checkbox"] {
+    display: none;
+}
+
+/* Create equal space between text and toggle button */
+/* .switch .text {
+    flex: 1;
+    padding: 0 10px;
+}
+
+.switch .slider {
+    position: relative;
+    cursor: pointer;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 20px;
+} */
+
+/* .switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: 0.4s;
+} */
+
+/* .switch input:checked + .slider {
+    background-color: #4caf50;
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+} */
+
+/* Style the submit button */
+button {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Style the footer */
+/* footer {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+} */
+
+/* Remove the border from the label element */
+/* .switch label {
+    border: none;
+} */
