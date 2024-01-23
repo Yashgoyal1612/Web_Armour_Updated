@@ -1,15 +1,21 @@
 var portKey = "victoria";
 var port = chrome.runtime.connect({ name: "victoria" });
 port.postMessage({ name: portKey });
+var count = 0;
+chrome.storage.session.setAccessLevel({accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS"});
+// implement redundancy
+// 
+
 
 port.onMessage.addListener(function (msg) {
   let bootyCall = port.question;
+  console.log("[!] port.question: " + msg.url, count++);
   main(msg.url);
 });
 
 var score = 0;
 let ipqualityscore_url = "https://www.ipqualityscore.com/api/json/url/";
-let API_KEY = '';
+let API_KEY = ''; //
 
 function checkLongURL(url, len) {
   if (url.length > len) {
@@ -64,6 +70,7 @@ const sendHTTPReq = async (url) => {
 };
 
 function checkIDN(url) {
+  console.log(url);
   let tmp_url = url.split('/');
   let domain = tmp_url[2];
   for (let i = 0; i < domain.length; i++) {
@@ -77,7 +84,12 @@ function checkIDN(url) {
 
 async function isRedirectingToAnotherDomain(url) {
   try {
-    const response = await fetch(url, { method: 'GET', mode: 'cors', headers: { 'Access-Control-Allow-Origin': '*' }, redirect: 'follow' });
+    const response = await fetch(url, { 
+      method: 'GET', 
+      mode: 'cors', 
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      redirect: 'follow' 
+    });
     if (response.redirected) {
       const originalDomain = new URL(url).hostname;
       const finalURL = response.url;
@@ -94,21 +106,76 @@ async function isRedirectingToAnotherDomain(url) {
   return false;
 }
 
-function main(url) {
-  if (API_KEY !== '') {
+const saveData = async (url, data) => {
+  let data_to_store = {url:data};
+  const key = "yummy_yum";  
+  chrome.storage.local.set({key, data_to_store}).then(() => {
+    console.log("Value is set!!");
+    }
+  )
+}
+
+const getAllKeys = () => {
+  chrome.storage.local.get(null, function(items) {
+    var allKeys = Object.keys(items);
+    console.log("[+]keys: "+ allKeys);
+});
+
+}
+
+const getData = () => {
+  const key = "yummy_yum";
+  chrome.storage.local.get(["key"]).then((result) => {
+  console.log("Value currently is " + result);
+  });
+}
+
+const offline_check = (url) => {
+  const LongURl = checkLongURL(url);
+  const ShortURl = checkShortURL(url);
+  const IDN = checkIDN(url);
+  const Redirecting = isRedirectingToAnotherDomain(url.split('/')[0]+"//"+url.split('/')[2]); 
+  const JsonData = {
+    "LongURL": LongURl,
+    "ShortURL": ShortURl,
+    "IDN" : IDN,
+    "Redirecting": Redirecting
+  };
+  return JsonData;
+}
+
+const URLSeprator = (url, api=0) => {
     let tmp_url = url.split('/');
     let domain = tmp_url[2];
-    let scheme = tmp_url[0].slice(0, -1) + '%3a%2f%2f';
+    let scheme = null;
+    if(api === 1){scheme = tmp_url[0].slice(0, -1) + '%3a%2f%2f';}
+    else{scheme = tmp_url[0]+'//';}
+    
+    let endpoint = tmp_url[3];
     url = scheme + domain;
+    return [scheme, domain, endpoint];
+}
+
+const main = (url) => {
+
+  console.log("URL: ", url);
+  
+  if (API_KEY !== '') {
+    let [scheme, domain, endpoint] = URLSeprator(url, api=1);
+    url = scheme+domain;
     sendHTTPReq(url);
   } else {
-    checkLongURL(url);
-    checkShortURL(url);
-    checkIDN(url);
-    isRedirectingToAnotherDomain(url);
+    let [scheme, domain, endpoint] = URLSeprator(url);
+    url = scheme + domain;
+    const JsonData = offline_check(url);
+    console.log("{!} JsonData: "+ JSON.stringify(JsonData));
+    //saveData(url, JsonData);
+    // getAllKeys();
+    getData();
   }
 
   console.log('Final Score: ' + score);
+  // saveData(); getData();
   if (score >= 1) {
     showCustomWarning();
   }

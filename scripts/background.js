@@ -7,7 +7,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
             console.assert(port.name === portKey);
             port.onMessage.addListener(function (msg) {
                 port.postMessage({ url: url }); // change the damn with url
-                console.log("onActivated: " + url)
+                console.log("onActivated: " + url);
             });
         });
         // console.log(y);

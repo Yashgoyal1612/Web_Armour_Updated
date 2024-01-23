@@ -1,7 +1,7 @@
 // var initialStage = 1;
 var score = 0;
 let ipqualityscore_url = "https://www.ipqualityscore.com/api/json/url/";
-let API_KEY = ""; // Your API key should be set here
+let API_KEY = "dfuOXADlEETdYsy2R5o2PBv6HOVEUk0k"; // Your API key should be set here
 
 function checkLongURL(url, len) {
   if (url.length > len) {
