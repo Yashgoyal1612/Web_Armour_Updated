@@ -1,11 +1,12 @@
 var portKey = "victoria";
 var port = chrome.runtime.connect({ name: "victoria" });
+console.log("Connected with port..!");
 port.postMessage({ name: portKey });
 var count = 0;
-chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" });
+//chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" });
 
 port.onMessage.addListener(function (msg) {
-  let bootyCall = port.question;
+  // let bootyCall = port.question;
   console.log("[!] port.question: " + msg.url, count++);
   main(msg.url);
 });
@@ -98,7 +99,7 @@ async function isRedirectingToAnotherDomain(url) {
       }
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error(error);
   }
   return false;
 }
@@ -169,7 +170,7 @@ const main = async (url) => {
     console.log("{!} JsonData: " + JSON.stringify(JsonData));
     //saveData(url, JsonData);
     // getAllKeys();
-    getData();
+    //getData();
     checkScoreAndShowWarning();
   }
 
