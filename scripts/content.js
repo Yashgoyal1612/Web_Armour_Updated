@@ -2,10 +2,7 @@ var portKey = "victoria";
 var port = chrome.runtime.connect({ name: "victoria" });
 port.postMessage({ name: portKey });
 var count = 0;
-chrome.storage.session.setAccessLevel({accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS"});
-// implement redundancy
-// 
-
+chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" });
 
 port.onMessage.addListener(function (msg) {
   let bootyCall = port.question;
@@ -84,11 +81,11 @@ function checkIDN(url) {
 
 async function isRedirectingToAnotherDomain(url) {
   try {
-    const response = await fetch(url, { 
-      method: 'GET', 
-      mode: 'cors', 
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
       headers: { 'Access-Control-Allow-Origin': '*' },
-      redirect: 'follow' 
+      redirect: 'follow'
     });
     if (response.redirected) {
       const originalDomain = new URL(url).hostname;
@@ -107,26 +104,25 @@ async function isRedirectingToAnotherDomain(url) {
 }
 
 const saveData = async (url, data) => {
-  let data_to_store = {url:data};
-  const key = "yummy_yum";  
-  chrome.storage.local.set({key, data_to_store}).then(() => {
+  let data_to_store = { url: data };
+  const key = "yummy_yum";
+  chrome.storage.local.set({ key, data_to_store }).then(() => {
     console.log("Value is set!!");
-    }
+  }
   )
 }
 
 const getAllKeys = () => {
-  chrome.storage.local.get(null, function(items) {
+  chrome.storage.local.get(null, function (items) {
     var allKeys = Object.keys(items);
-    console.log("[+]keys: "+ allKeys);
-});
-
+    console.log("[+]keys: " + allKeys);
+  });
 }
 
 const getData = () => {
   const key = "yummy_yum";
   chrome.storage.local.get(["key"]).then((result) => {
-  console.log("Value currently is " + result);
+    console.log("Value currently is " + result);
   });
 }
 
@@ -134,111 +130,113 @@ const offline_check = (url) => {
   const LongURl = checkLongURL(url);
   const ShortURl = checkShortURL(url);
   const IDN = checkIDN(url);
-  const Redirecting = isRedirectingToAnotherDomain(url.split('/')[0]+"//"+url.split('/')[2]); 
+  const Redirecting = isRedirectingToAnotherDomain(url.split('/')[0] + "//" + url.split('/')[2]);
   const JsonData = {
     "LongURL": LongURl,
     "ShortURL": ShortURl,
-    "IDN" : IDN,
+    "IDN": IDN,
     "Redirecting": Redirecting
   };
   return JsonData;
 }
 
-const URLSeprator = (url, api=0) => {
-    let tmp_url = url.split('/');
-    let domain = tmp_url[2];
-    let scheme = null;
-    if(api === 1){scheme = tmp_url[0].slice(0, -1) + '%3a%2f%2f';}
-    else{scheme = tmp_url[0]+'//';}
-    
-    let endpoint = tmp_url[3];
-    url = scheme + domain;
-    return [scheme, domain, endpoint];
+const URLSeprator = (url, api = 0) => {
+  let tmp_url = url.split('/');
+  let domain = tmp_url[2];
+  let scheme = null;
+  if (api === 1) { scheme = tmp_url[0].slice(0, -1) + '%3a%2f%2f'; }
+  else { scheme = tmp_url[0] + '//'; }
+
+  let endpoint = tmp_url[3];
+  url = scheme + domain;
+  return [scheme, domain, endpoint];
 }
 
-const main = (url) => {
-
+const main = async (url) => {
   console.log("URL: ", url);
-  
+
   if (API_KEY !== '') {
-    let [scheme, domain, endpoint] = URLSeprator(url, api=1);
-    url = scheme+domain;
-    sendHTTPReq(url);
+    let [scheme, domain, endpoint] = URLSeprator(url, api = 1);
+    url = scheme + domain;
+    const success = await sendHTTPReq(url);
+    if (success) {
+      checkScoreAndShowWarning();
+    }
   } else {
     let [scheme, domain, endpoint] = URLSeprator(url);
     url = scheme + domain;
     const JsonData = offline_check(url);
-    console.log("{!} JsonData: "+ JSON.stringify(JsonData));
+    console.log("{!} JsonData: " + JSON.stringify(JsonData));
     //saveData(url, JsonData);
     // getAllKeys();
     getData();
+    checkScoreAndShowWarning();
   }
 
   console.log('Final Score: ' + score);
   // saveData(); getData();
+};
+
+function checkScoreAndShowWarning() {
   if (score >= 1) {
     showCustomWarning();
   }
 }
 
 function showCustomWarning() {
-  var modal = document.createElement('div');
-  modal.id = 'customWarningModal';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <p>This website may not be safe!</p>
-    </div>
-  `;
+  // Create elements for the warning overlay
+  const warningOverlay = document.createElement("div");
+  warningOverlay.id = "warningOverlay";
+  warningOverlay.style.position = "fixed";
+  warningOverlay.style.top = "0";
+  warningOverlay.style.left = "0";
+  warningOverlay.style.width = "100%";
+  warningOverlay.style.height = "100%";
+  warningOverlay.style.background = "rgba(255, 0, 0)";
+  warningOverlay.style.display = "flex";
+  warningOverlay.style.flexDirection = "column";
+  warningOverlay.style.alignItems = "center";
+  warningOverlay.style.justifyContent = "center";
+  warningOverlay.style.zIndex = "9999";
 
-  document.body.appendChild(modal);
+  const warningMessage = document.createElement("p");
+  warningMessage.style.color = "#fff";
+  warningMessage.style.fontSize = "24px";
+  warningMessage.innerText = "Warning: This website may not be safe to visit. Hackers might steal your information.";
 
-  var style = document.createElement('style');
-  style.innerHTML = `
-    #customWarningModal {
-      display: none;
-      position: fixed;
-      z-index: 1; 
-      left: 0;  
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.7);
+  const backToSafetyButton = document.createElement("button");
+  backToSafetyButton.style.padding = "10px";
+  backToSafetyButton.style.fontSize = "16px";
+  backToSafetyButton.style.cursor = "pointer";
+  backToSafetyButton.innerText = "Back to Safety";
+  backToSafetyButton.addEventListener("click", function () {
+    // Remove the warning overlay when the button is clicked
+    warningOverlay.remove();
+    // Check if there is a previous page in the browser history
+    if (window.history.length > 1) {
+      // Navigate back in the browser history
+      window.history.back();
+    } else {
+      // If no previous page, open a new tab with a default URL
+      const defaultURL = "https://example.com"; // Replace with your desired default URL
+      chrome.tabs.create({ url: defaultURL });
     }
+    // Reset body and html styles
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+  });
 
-    .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 50%;
-      text-align: center;
-    }
+  // Append elements to the warning overlay
+  warningOverlay.appendChild(warningMessage);
+  warningOverlay.appendChild(backToSafetyButton);
 
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+  // Append the warning overlay to the body
+  document.body.appendChild(warningOverlay);
 
-    .close:hover {
-      color: black;
-      text-decoration: none;
-    }
-  `;
-
-  document.head.appendChild(style);
-
-  modal.style.display = 'block';
-
-  var closeButton = modal.querySelector('.close');
-  closeButton.addEventListener('click', closeCustomWarning);
+  // Set body and html styles to hide overflow
+  document.body.style.overflow = "hidden";
+  document.documentElement.style.overflow = "hidden";
 }
 
-function closeCustomWarning() {
-  var modal = document.getElementById('customWarningModal');
-  modal.style.display = 'none';
-}
+// Call the function directly
+// main("https://example.com"); // Replace with your actual URL
